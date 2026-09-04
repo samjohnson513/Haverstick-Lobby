@@ -145,8 +145,8 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="#0C3C59" stroke-width="1.7" stroke-linecap="round"><path d="M2.5 8.5a14 14 0 0 1 19 0"/><path d="M5.5 12a9.5 9.5 0 0 1 13 0"/><path d="M8.6 15.4a5 5 0 0 1 6.8 0"/><circle cx="12" cy="19" r="1.3" fill="#0C3C59" stroke="none"/></svg>
         <div>
           <div class="lbl">Complimentary Guest Wi-Fi</div>
-          <div class="row">Network: <b>Haverstick | Guest Wi-Fi</b></div>
-          <div class="row">Password: <b>Haverstick8250</b></div>
+          <div class="row">Network: <b id="wifiNet"></b></div>
+          <div class="row">Password: <b id="wifiPw"></b></div>
         </div>
       </div>
     </section>
@@ -187,6 +187,8 @@
 
 <script>
 /* ============ EDIT CONTENT HERE ============ */
+const WIFI = { network: "Haverstick | Guest Wi-Fi", password: "Haverstick8250" };
+
 const TENANTS = [
   ["Broyles & Ricafort, PC", "100"],
   ["Conference Center", "175", "amen"],
@@ -220,39 +222,52 @@ const AMENITY_SLIDES = [
 ];
 /* =========== END EDIT SECTION ============ */
 
-const dir = document.getElementById("dirlist");
-for (const t of TENANTS) {
-  const li = document.createElement("li");
-  if (t[2]) li.className = t[2];
-  li.innerHTML = '<span class="name"></span><span class="dots"></span><span class="suite"></span>';
-  li.querySelector(".name").textContent = t[0];
-  li.querySelector(".suite").textContent = t[1];
-  dir.appendChild(li);
+function render(cfg) {
+  document.getElementById("wifiNet").textContent = cfg.WIFI.network;
+  document.getElementById("wifiPw").textContent = cfg.WIFI.password;
+
+  const dir = document.getElementById("dirlist");
+  dir.innerHTML = "";
+  for (const t of cfg.TENANTS) {
+    const li = document.createElement("li");
+    if (t[2]) li.className = t[2];
+    li.innerHTML = '<span class="name"></span><span class="dots"></span><span class="suite"></span>';
+    li.querySelector(".name").textContent = t[0];
+    li.querySelector(".suite").textContent = t[1];
+    dir.appendChild(li);
+  }
+
+  const ann = document.getElementById("annlist");
+  ann.innerHTML = "";
+  for (const a of cfg.ANNOUNCEMENTS) {
+    const li = document.createElement("li");
+    const div = document.createElement("div");
+    div.innerHTML = a;
+    li.appendChild(div);
+    ann.appendChild(li);
+  }
+
+  const am = document.getElementById("amenity");
+  am.innerHTML = "";
+  cfg.AMENITY_SLIDES.forEach((s, i) => {
+    const d = document.createElement("div");
+    d.className = "slide" + (i === 0 ? " on" : "");
+    d.innerHTML = "<h3></h3><ul>" + s.items.map(() => "<li></li>").join("") +
+                  "</ul><div class='foot'></div>";
+    d.querySelector("h3").textContent = s.title;
+    d.querySelectorAll("li").forEach((li, j) => li.textContent = s.items[j]);
+    d.querySelector(".foot").textContent = s.foot || "";
+    am.appendChild(d);
+  });
+  cur = 0;
 }
 
-const ann = document.getElementById("annlist");
-for (const a of ANNOUNCEMENTS) {
-  const li = document.createElement("li");
-  const div = document.createElement("div");
-  div.innerHTML = a;
-  li.appendChild(div);
-  ann.appendChild(li);
-}
-
-const am = document.getElementById("amenity");
-AMENITY_SLIDES.forEach((s, i) => {
-  const d = document.createElement("div");
-  d.className = "slide" + (i === 0 ? " on" : "");
-  d.innerHTML = "<h3></h3><ul>" + s.items.map(() => "<li></li>").join("") +
-                "</ul><div class='foot'></div>";
-  d.querySelector("h3").textContent = s.title;
-  d.querySelectorAll("li").forEach((li, j) => li.textContent = s.items[j]);
-  d.querySelector(".foot").textContent = s.foot || "";
-  am.appendChild(d);
-});
 let cur = 0;
-if (AMENITY_SLIDES.length > 1) setInterval(() => {
-  const slides = am.children;
+let currentCfg = { WIFI, TENANTS, ANNOUNCEMENTS, AMENITY_SLIDES };
+render(currentCfg);
+setInterval(() => {
+  const slides = document.getElementById("amenity").children;
+  if (slides.length < 2) return;
   slides[cur].classList.remove("on");
   cur = (cur + 1) % slides.length;
   slides[cur].classList.add("on");
@@ -284,16 +299,30 @@ async function weather() {
 }
 weather(); setInterval(weather, 30 * 60 * 1000);
 
-/* Pick up content updates automatically: every 30 minutes, check that the page is
-   actually reachable before reloading. If the network is down (captive-portal
-   session expired, WiFi blip), keep showing what we have instead of an error page. */
-async function safeReload() {
+/* Pick up content updates WITHOUT reloading. A reload would knock Silk out of
+   fullscreen and bring the address bar back, so instead: every 30 minutes fetch
+   this page's own source, pull the EDIT CONTENT block out of it, and redraw the
+   directory / announcements / WiFi / amenities in place if anything changed.
+   Offline or unreachable -> keep showing what we have. Design changes (CSS/layout)
+   still need a one-time manual reload, which is rare and done in person. */
+const CFG_START = "/* ============ EDIT CONTENT HERE ============ */";
+const CFG_END = "/* =========== END EDIT SECTION ============ */";
+async function refreshContent() {
   try {
-    const r = await fetch(location.href, { cache: "no-store", method: "HEAD" });
-    if (r.ok) location.reload();
-  } catch (e) { /* offline — stay on the current page and try again later */ }
+    const r = await fetch(location.href, { cache: "no-store" });
+    if (!r.ok) return;
+    const html = await r.text();
+    const a = html.indexOf(CFG_START), b = html.indexOf(CFG_END);
+    if (a < 0 || b < 0) return;
+    const block = html.slice(a + CFG_START.length, b);
+    const cfg = new Function(block + "\nreturn { WIFI, TENANTS, ANNOUNCEMENTS, AMENITY_SLIDES };")();
+    if (JSON.stringify(cfg) !== JSON.stringify(currentCfg)) {
+      currentCfg = cfg;
+      render(cfg);
+    }
+  } catch (e) { /* offline or bad edit — keep the current content */ }
 }
-setInterval(safeReload, 30 * 60 * 1000);
+setInterval(refreshContent, 30 * 60 * 1000);
 
 /* Keep-awake, layer 2: ask the browser for a screen wake lock where supported, and
    re-acquire it if the page is ever hidden and shown again. Layer 1 is the muted
