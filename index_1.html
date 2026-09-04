@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8">
+<title>Haverstick II Lobby</title></head><body>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+  :root{
+    --ground:#F6F4EF; --card:#FFFFFF; --ink:#14263A; --navy:#0C3C59;
+    --brass:#9C7C3C; --muted:#66727D; --hair:#E4E0D6; --navy-deep:#0A2F46;
+    --disp:'Marcellus', 'Georgia', serif;
+    --body:'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{background:var(--ground);color:var(--ink);font-family:var(--body);cursor:none}
+  .frame{display:grid;grid-template-rows:auto 1fr auto;height:100vh;padding:2.2vh 2.4vw 0;gap:1.8vh}
+
+  /* ---------- header ---------- */
+  header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--navy);padding-bottom:1.6vh}
+  .bldg h1{font-family:var(--disp);font-weight:400;font-size:4.6vh;letter-spacing:.06em;color:var(--navy);text-transform:uppercase}
+  .bldg .addr{font-size:2vh;color:var(--muted);letter-spacing:.04em;margin-top:.4vh}
+  .tp-logo{height:6.4vh;width:auto;display:block}
+
+  /* ---------- main grid ---------- */
+  main{display:grid;grid-template-columns:1.25fr .95fr .78fr;gap:1.6vw;min-height:0}
+  .panel{background:var(--card);border:1px solid var(--hair);border-radius:.6vh;padding:2.4vh 1.6vw;display:flex;flex-direction:column;min-height:0}
+  .panel-title{font-family:var(--disp);font-size:2.2vh;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin-bottom:1.6vh}
+
+  /* directory */
+  .dir{justify-content:flex-start}
+  .dir ul{list-style:none;display:flex;flex-direction:column;justify-content:space-evenly;flex:1;min-height:0}
+  .dir li{display:flex;align-items:baseline;font-size:2.35vh;line-height:1.15}
+  .dir .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dir .dots{flex:1;border-bottom:1px dotted #C9C2B2;margin:0 .7vw;transform:translateY(-.5vh)}
+  .dir .suite{font-weight:700;color:var(--brass);font-variant-numeric:tabular-nums;letter-spacing:.03em}
+  .dir li.amen .name{font-weight:400;color:var(--muted);font-style:italic}
+
+  /* center column */
+  .mid{display:flex;flex-direction:column;gap:1.8vh;min-height:0}
+  .welcome{background:var(--navy);color:#F4F7F9;border-radius:.6vh;padding:2.6vh 1.6vw}
+  .welcome .hello{font-family:var(--disp);font-size:3.3vh;letter-spacing:.05em}
+  .welcome .sub{font-size:2vh;color:#B9CBD8;margin-top:.6vh}
+  .ann{flex:1;min-height:0}
+  .ann ul{list-style:none;display:flex;flex-direction:column;gap:1.6vh;overflow:hidden}
+  .ann li{display:flex;gap:.8vw;font-size:2.2vh;line-height:1.35}
+  .ann li::before{content:"";flex:0 0 .45vh;height:auto;background:var(--brass);border-radius:1vh;margin-top:.3vh}
+  .ann b{font-weight:700}
+  .wifi{display:flex;align-items:center;gap:1.2vw;background:var(--card);border:1px solid var(--hair);border-radius:.6vh;padding:1.8vh 1.6vw}
+  .wifi svg{height:5vh;width:auto;flex:0 0 auto}
+  .wifi .lbl{font-family:var(--disp);font-size:1.9vh;letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+  .wifi .row{font-size:2.3vh;margin-top:.3vh}
+  .wifi .row b{font-weight:700}
+
+  /* right rail */
+  .rail{display:flex;flex-direction:column;gap:1.8vh;min-height:0}
+  .clockcard{background:var(--card);border:1px solid var(--hair);border-radius:.6vh;padding:2vh 1.6vw;text-align:center}
+  #time{font-family:var(--disp);font-size:6.2vh;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1}
+  #date{font-size:2vh;color:var(--muted);margin-top:.8vh;letter-spacing:.05em}
+  #wx{display:none;border-top:1px solid var(--hair);margin-top:1.6vh;padding-top:1.4vh;font-size:2vh;color:var(--ink)}
+  #wx .t{font-family:var(--disp);font-size:3.4vh;color:var(--navy)}
+  #wx .d{color:var(--muted);font-size:1.8vh;margin-top:.3vh}
+
+  .amenity{flex:1;position:relative;overflow:hidden;background:var(--card);border:1px solid var(--hair);border-radius:.6vh;min-height:0}
+  .slide{position:absolute;inset:0;padding:2.4vh 1.4vw;opacity:0;transition:opacity 1.2s ease;display:flex;flex-direction:column}
+  .slide.on{opacity:1}
+  .slide h3{font-family:var(--disp);font-size:2.5vh;color:var(--navy);letter-spacing:.06em;margin-bottom:1.4vh}
+  .slide ul{list-style:none;display:flex;flex-direction:column;gap:1.2vh}
+  .slide li{font-size:2vh;line-height:1.4;color:var(--ink);padding-left:1vw;position:relative}
+  .slide li::before{content:"";position:absolute;left:0;top:.9vh;width:.5vh;height:.5vh;background:var(--brass);border-radius:50%}
+  .slide .foot{margin-top:auto;font-size:1.8vh;color:var(--muted);font-style:italic}
+  @media (prefers-reduced-motion: reduce){.slide{transition:none}}
+
+  /* ---------- footer ---------- */
+  footer{background:var(--navy);color:#E8EEF3;margin:0 -2.4vw;padding:1.8vh 2.4vw 2vh;display:flex;justify-content:space-between;align-items:flex-start;gap:2vw}
+  footer .blk .k{font-family:var(--disp);font-size:1.7vh;letter-spacing:.16em;text-transform:uppercase;color:#9BB6C8}
+  footer .blk .v{font-size:2.05vh;margin-top:.4vh;line-height:1.35}
+  footer .blk .v b{font-weight:700}
+  footer .right{text-align:right}
+</style>
+
+<div class="frame">
+  <header>
+    <div class="bldg">
+      <h1>Haverstick&nbsp;II</h1>
+      <div class="addr">8250 Haverstick Road &middot; Indianapolis, IN 46240</div>
+    </div>
+    <svg id="tpLogo" class="tp-logo" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1419.37 321.7">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #0c3c59;
+      }
+
+      .cls-2 {
+        fill: #848484;
+      }
+
+      .cls-3 {
+        fill: #afafaf;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <path class="cls-2" d="M188.35,259.15v-39.35h88.95c24.11,0,46.79-9.39,63.85-26.44,17.05-17.07,26.45-39.74,26.45-63.86,0-49.79-40.51-90.3-90.3-90.3h-23.99V0h24.07c71.45,0,129.57,58.12,129.57,129.57,0,34.62-13.48,67.16-37.96,91.62-24.47,24.48-57,37.96-91.62,37.96h-89.03Z"/>
+    <path class="cls-2" d="M188.35,199.82v-39.35h86.38c17.07,0,31.46-13.51,32.07-30.11.31-8.57-2.8-16.68-8.77-22.83-5.92-6.17-13.91-9.58-22.48-9.58h-22.38v-39.34h21.14c38.92-.01,71.15,31.08,71.85,69.3.35,19.09-6.84,37.12-20.24,50.74-13.39,13.65-31.27,21.17-50.36,21.17h-87.2Z"/>
+    <polygon class="cls-1" points="132.24 58.67 132.24 282.55 110.5 282.55 110.5 58.58 109.37 58.58 109.37 58.56 0 58.56 0 97.76 71.15 97.76 71.15 321.7 171.59 321.7 171.59 97.95 236.55 97.95 236.55 58.62 132.24 58.67"/>
+    <rect class="cls-1" x="98.68" y="-98.67" width="39.19" height="236.55" transform="translate(137.87 -98.67) rotate(90)"/>
+    <g>
+      <path class="cls-1" d="M571.02,61.15h-41.65v-19.55h107.44v19.55h-41.54v95.7h-24.25V61.15Z"/>
+      <path class="cls-1" d="M817.42,98.85c0,32.14-21.54,60.45-62.4,60.45-38.45,0-61.06-26.69-61.06-60.39,0-31.78,23.69-59.75,62.09-59.75s61.37,28.08,61.37,59.69ZM719.51,98.54c0,22.76,12.36,41.56,36.78,41.56s35.6-20.16,35.6-40.92-11.59-40.81-36.69-40.81-35.68,19.17-35.68,40.17Z"/>
+      <path class="cls-1" d="M890.2,41.61h57.85c27.39,0,43.67,13.95,43.67,35.48,0,23.27-16.38,36.9-43.79,36.9h-33.42v42.87h-24.32V41.61ZM914.51,94.84h31.2c13.13,0,21.77-4.26,21.77-17.37,0-10.53-6.72-16.84-21.77-16.84h-31.2v34.21Z"/>
+      <path class="cls-1" d="M530.31,195.43h42.66c21.71,0,32.62,11.16,32.62,26.52,0,17.59-12.19,27.58-32.37,27.58h-28.18v34.6h-14.73v-88.7ZM545.04,237.51h26.42c11.45,0,19.31-3.48,19.31-15.32,0-9.37-6.2-14.8-19.31-14.8h-26.42v30.12Z"/>
+      <path class="cls-1" d="M640.63,246.87v37.26h-14.56v-88.7h43.78c18.72,0,30.78,8.75,30.78,24.37,0,10.9-5.65,18.29-16.03,21.11,5.31,1.58,13.71,5.79,13.71,21.41v4.03c0,6.63-.06,13.94,1.06,17.79h-15.02c-1.36-3.88-1.27-10.26-1.27-18.17v-2.95c0-12.1-4.65-16.14-19.57-16.14h-22.86ZM640.63,235.2h25.66c13.05,0,19.3-4.59,19.3-14.42,0-9.04-6.31-13.68-18.9-13.68h-26.06v28.1Z"/>
+      <path class="cls-1" d="M812.63,239.5c0,24.95-16.82,46.51-47.17,46.51s-46.63-20.53-46.63-46.52c0-24.56,18.29-45.94,47.14-45.94s46.65,21.44,46.65,45.95ZM734.34,239.17c0,18.53,10.9,34.83,31.74,34.83s31.03-16.14,31.03-34.25-10.65-34.19-31.84-34.19c-19.87,0-30.94,15.78-30.94,33.61Z"/>
+      <path class="cls-1" d="M835.06,195.43h42.66c21.71,0,32.62,11.16,32.62,26.52,0,17.59-12.19,27.58-32.37,27.58h-28.18v34.6h-14.73v-88.7ZM849.79,237.51h26.42c11.45,0,19.31-3.48,19.31-15.32,0-9.37-6.2-14.8-19.31-14.8h-26.42v30.12Z"/>
+      <path class="cls-1" d="M997.76,243.76h-52.32v28.21h57.82l-1.88,12.17h-70.62v-88.7h69.75v12.17h-55.08v23.99h52.32v12.17Z"/>
+      <path class="cls-1" d="M1038.83,246.87v37.26h-14.56v-88.7h43.78c18.72,0,30.78,8.75,30.78,24.37,0,10.9-5.65,18.29-16.03,21.11,5.31,1.58,13.71,5.79,13.71,21.41v4.03c0,6.63-.06,13.94,1.06,17.79h-15.02c-1.37-3.88-1.27-10.26-1.27-18.17v-2.95c0-12.1-4.65-16.14-19.58-16.14h-22.86ZM1038.83,235.2h25.66c13.05,0,19.3-4.59,19.3-14.42,0-9.04-6.31-13.68-18.9-13.68h-26.06v28.1Z"/>
+      <path class="cls-1" d="M1145.11,207.61h-33.2v-12.18h81.08v12.18h-33.14v76.52h-14.74v-76.52Z"/>
+      <path class="cls-1" d="M1225.28,195.43v88.7h-14.67v-88.7h14.67Z"/>
+      <path class="cls-1" d="M1320.64,243.76h-52.32v28.21h57.82l-1.88,12.17h-70.62v-88.7h69.75v12.17h-55.08v23.99h52.32v12.17Z"/>
+      <path class="cls-1" d="M1354.53,258.16c3.06,9.74,10.32,16.49,27.13,16.49s22.61-6.15,22.61-13.81c0-8.1-4.7-13.01-26.57-16.7-27.65-4.7-33.85-13.45-33.85-25.49,0-16.1,15.34-25.04,35.05-25.04,29.23,0,36.37,15.23,37.37,24.51h-14.81c-1.67-5.64-5.24-13.14-22.98-13.14-12.16,0-19.67,4.1-19.67,12.24,0,6.74,3.63,10.85,22.94,14.14,32.41,5.58,37.6,15.58,37.6,27.99,0,14.42-11.45,26.6-38.87,26.6-25.49,0-38.01-11.56-40.84-27.8h14.88Z"/>
+    </g>
+    <rect class="cls-3" x="464.05" y="20.2" width="7.21" height="282.73"/>
+  </g>
+</svg>
+  </header>
+
+  <main>
+    <section class="panel dir">
+      <div class="panel-title">Tenant Directory</div>
+      <ul id="dirlist"></ul>
+    </section>
+
+    <section class="mid">
+      <div class="welcome">
+        <div class="hello">Welcome</div>
+        <div class="sub">We're glad you're here. Suites are listed in the directory at left.</div>
+      </div>
+      <div class="panel ann">
+        <div class="panel-title">Announcements</div>
+        <ul id="annlist"></ul>
+      </div>
+      <div class="wifi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0C3C59" stroke-width="1.7" stroke-linecap="round"><path d="M2.5 8.5a14 14 0 0 1 19 0"/><path d="M5.5 12a9.5 9.5 0 0 1 13 0"/><path d="M8.6 15.4a5 5 0 0 1 6.8 0"/><circle cx="12" cy="19" r="1.3" fill="#0C3C59" stroke="none"/></svg>
+        <div>
+          <div class="lbl">Complimentary Guest Wi-Fi</div>
+          <div class="row">Network: <b>Haverstick | Guest Wi-Fi</b></div>
+          <div class="row">Password: <b>Haverstick8250</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rail">
+      <div class="clockcard">
+        <div id="time">–:––</div>
+        <div id="date"></div>
+        <div id="wx"><span class="t"></span><div class="d"></div></div>
+      </div>
+      <div class="amenity" id="amenity"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="blk">
+      <div class="k">Owned By</div>
+      <div class="v"><b>Top Properties</b> &middot; Suite 120</div>
+    </div>
+    <div class="blk">
+      <div class="k">Managed By</div>
+      <div class="v"><b>JLL</b> &middot; 3925 River Crossing Parkway, Suite 195<br>Indianapolis, IN 46240 &middot; 317.613.7106</div>
+    </div>
+    <div class="blk right">
+      <div class="k">Leasing Inquiries &middot; Colliers</div>
+      <div class="v"><b>Rich Forslund / Matt Langfeldt</b> &middot; 317.713.2172<br>rich.j.forslund@colliers.com &middot; matt.langfeldt@colliers.com</div>
+    </div>
+  </footer>
+</div>
+
+<script>
+/* ============ EDIT CONTENT HERE ============ */
+const TENANTS = [
+  ["Broyles & Ricafort, PC", "100"],
+  ["Conference Center", "175", "amen"],
+  ["DTM Real Estate", "230"],
+  ["Fitness Center", "160", "amen"],
+  ["Introba", "285"],
+  ["Khairy & Associates, LLC", "140"],
+  ["Kleingers Group", "210"],
+  ["Law Office of Danielle Gregory PC", "135"],
+  ["Medaris Financial Management, Inc.", "280"],
+  ["Napariu Law, LLC", "150"],
+  ["Psi Upsilon Foundation and Fraternity", "250"],
+  ["Sherpa Financial Group™ LLC", "280"],
+  ["Top Properties", "120"],
+  ["Trahin Miller Insurance Services", "145"],
+];
+
+const ANNOUNCEMENTS = [
+  "The building is now owned by <b>Top Properties</b> (Suite 120) — we're glad to be here and look forward to meeting every tenant.",
+  "<b>Conference Center (Suite 175)</b> — reserve through Prism; projector, whiteboards and Wi-Fi included.",
+  "<b>Fitness Center (Suite 160)</b> — open daily for the exclusive use of Haverstick tenants.",
+];
+
+const AMENITY_SLIDES = [
+  { title: "Conference Center",
+    items: ["Tenant use, up to 20 guests", "First floor — Suite 175", "Projector, whiteboards & Wi-Fi", "Reserve via Prism"],
+    foot: "An amenity for Haverstick II tenants" },
+  { title: "Fitness Center",
+    items: ["Exclusive to Haverstick tenants", "First floor — Suite 160", "Open Mon–Fri 5:30a – 8:30p", "Weekends 8:00a – 8:00p"],
+    foot: "An amenity for Haverstick II tenants" },
+];
+/* =========== END EDIT SECTION ============ */
+
+const dir = document.getElementById("dirlist");
+for (const t of TENANTS) {
+  const li = document.createElement("li");
+  if (t[2]) li.className = t[2];
+  li.innerHTML = '<span class="name"></span><span class="dots"></span><span class="suite"></span>';
+  li.querySelector(".name").textContent = t[0];
+  li.querySelector(".suite").textContent = t[1];
+  dir.appendChild(li);
+}
+
+const ann = document.getElementById("annlist");
+for (const a of ANNOUNCEMENTS) {
+  const li = document.createElement("li");
+  const div = document.createElement("div");
+  div.innerHTML = a;
+  li.appendChild(div);
+  ann.appendChild(li);
+}
+
+const am = document.getElementById("amenity");
+AMENITY_SLIDES.forEach((s, i) => {
+  const d = document.createElement("div");
+  d.className = "slide" + (i === 0 ? " on" : "");
+  d.innerHTML = "<h3></h3><ul>" + s.items.map(() => "<li></li>").join("") +
+                "</ul><div class='foot'></div>";
+  d.querySelector("h3").textContent = s.title;
+  d.querySelectorAll("li").forEach((li, j) => li.textContent = s.items[j]);
+  d.querySelector(".foot").textContent = s.foot || "";
+  am.appendChild(d);
+});
+let cur = 0;
+if (AMENITY_SLIDES.length > 1) setInterval(() => {
+  const slides = am.children;
+  slides[cur].classList.remove("on");
+  cur = (cur + 1) % slides.length;
+  slides[cur].classList.add("on");
+}, 12000);
+
+function tick() {
+  const n = new Date();
+  let h = n.getHours() % 12; if (h === 0) h = 12;
+  document.getElementById("time").textContent =
+    h + ":" + String(n.getMinutes()).padStart(2, "0") +
+    (n.getHours() < 12 ? " AM" : " PM");
+  document.getElementById("date").textContent =
+    n.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+}
+tick(); setInterval(tick, 15000);
+
+/* Weather (Indianapolis) — shows only if the hosting allows outbound fetch; hides silently otherwise. */
+const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Fog",51:"Drizzle",53:"Drizzle",55:"Drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",71:"Snow",73:"Snow",75:"Heavy snow",80:"Showers",81:"Showers",82:"Heavy showers",95:"Thunderstorms",96:"Thunderstorms",99:"Thunderstorms"};
+async function weather() {
+  try {
+    const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=39.9097&longitude=-86.1108&current=temperature_2m,weather_code&temperature_unit=fahrenheit");
+    const j = await r.json();
+    const c = j.current;
+    const box = document.getElementById("wx");
+    box.querySelector(".t").textContent = Math.round(c.temperature_2m) + "°F";
+    box.querySelector(".d").textContent = WMO[c.weather_code] || "";
+    box.style.display = "block";
+  } catch (e) { /* hosting blocks fetch — leave hidden */ }
+}
+weather(); setInterval(weather, 30 * 60 * 1000);
+
+/* Pick up content updates automatically: every 30 minutes, check that the page is
+   actually reachable before reloading. If the network is down (captive-portal
+   session expired, WiFi blip), keep showing what we have instead of an error page. */
+async function safeReload() {
+  try {
+    const r = await fetch(location.href, { cache: "no-store", method: "HEAD" });
+    if (r.ok) location.reload();
+  } catch (e) { /* offline — stay on the current page and try again later */ }
+}
+setInterval(safeReload, 30 * 60 * 1000);
+</script>
+</body></html>
